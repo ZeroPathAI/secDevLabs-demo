@@ -15,18 +15,10 @@ func HealthCheck(c echo.Context) error {
 
 // GetTicket returns the authenticated user's ticket.
 func GetTicket(c echo.Context) error {
-	// Get authenticated user's ID from the session/token
-	authenticatedUserID := c.Get("user")
-	if authenticatedUserID == nil {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"result": "error", "details": "Authentication required"})
-	}
-
-	// Get requested user ID from path parameter
 	requestedID := c.Param("id")
 	
-	// Verify user is accessing their own ticket
-	if authenticatedUserID.(string) != requestedID {
-		return c.JSON(http.StatusForbidden, map[string]string{"result": "error", "details": "Access denied"})
+	if err := ValidateUserAccess(c, requestedID); err != nil {
+		return err
 	}
 
 	userDataQuery := map[string]interface{}{"userID": requestedID}
