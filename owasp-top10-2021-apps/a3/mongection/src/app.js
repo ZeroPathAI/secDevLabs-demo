@@ -76,16 +76,26 @@ server.post("/register", async (request, response) => {
 
 });
 
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 server.get("/search", (request, response) => {
-    const searchQuery = request.query.q;
+    const searchQuery = request.query.q || '';
+    const escapedQuery = escapeHtml(searchQuery);
 
     response.send(`
         <html>
             <head><title>Search Results</title></head>
             <body>
-                <h1>Search Results for: ${searchQuery}</h1>
+                <h1>Search Results for: ${escapedQuery}</h1>
                 <div id="results">
-                    No results found for: ${searchQuery}
+                    No results found for: ${escapedQuery}
                 </div>
             </body>
         </html>
