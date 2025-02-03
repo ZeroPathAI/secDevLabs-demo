@@ -76,6 +76,22 @@ server.post("/register", async (request, response) => {
 
 });
 
+server.get("/search", (request, response) => {
+    const searchQuery = request.query.q;
+
+    response.send(`
+        <html>
+            <head><title>Search Results</title></head>
+            <body>
+                <h1>Search Results for: ${searchQuery}</h1>
+                <div id="results">
+                    No results found for: ${searchQuery}
+                </div>
+            </body>
+        </html>
+    `);
+});
+
 mongoose.connect(`mongodb://${process.env.DBUSER}:${process.env.DBPASS}@mongo:27017/mongection`, {useNewUrlParser: true})
     .then( () => {
         console.log('Server Running at port: ' + PORT);
