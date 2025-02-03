@@ -13,13 +13,17 @@ func HealthCheck(c echo.Context) error {
 	return c.String(http.StatusOK, "WORKING\n")
 }
 
-// GetTicket returns the userID ticket.
+// GetTicket returns the authenticated user's ticket.
 func GetTicket(c echo.Context) error {
-	id := c.Param("id")
-	userDataQuery := map[string]interface{}{"userID": id}
+	requestedID := c.Param("id")
+	
+	if err := ValidateUserAccess(c, requestedID); err != nil {
+		return err
+	}
+
+	userDataQuery := map[string]interface{}{"userID": requestedID}
 	userDataResult, err := db.GetUserData(userDataQuery)
 	if err != nil {
-		// could not find this user in MongoDB (or MongoDB err connection)
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error finding this UserID."})
 	}
 
