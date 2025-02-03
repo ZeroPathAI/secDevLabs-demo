@@ -87,15 +87,24 @@ func (es *EchoServer) removeKey(user *user.User) error {
 	return nil
 }
 
-// GetUserKeyV2 returns the key of a given user.
+// GetUserKeyV2 returns the key of a given user after verifying authorization.
 func (es *EchoServer) GetUserKeyV2(c echo.Context) error {
+	// Get the authenticated user from the session
+	authenticatedUser := es.Auth.GetUser(c)
+	
+	// Get the requested username from the URL parameter
+	requestedUsername := c.Param("name")
 
-	username := c.Param("name")
+	// Verify the authenticated user matches the requested username
+	if authenticatedUser != requestedUsername {
+		es.Logger.Warn(fmt.Sprintf("Unauthorized attempt to access key for user '%s'", requestedUsername))
+		return c.JSON(http.StatusForbidden,
+			map[string]string{"result": "fail", "message": "Unauthorized access"})
+	}
 
-	userFromDB, err := es.Database.GetUser(username)
+	userFromDB, err := es.Database.GetUser(requestedUsername)
 	if err != nil {
-		es.Logger.Warn(fmt.Sprintf("User '%s' not found in the database", username))
-
+		es.Logger.Warn(fmt.Sprintf("User '%s' not found in the database", requestedUsername))
 		return c.JSON(http.StatusNotFound,
 			map[string]string{"result": "fail", "message": err.Error()})
 	}
@@ -106,7 +115,7 @@ func (es *EchoServer) GetUserKeyV2(c echo.Context) error {
 		es.Logger.Error("Error removing user key from database")
 	}
 
-	es.Logger.Info(fmt.Sprintf("User '%s' key found in the database", username))
+	es.Logger.Info(fmt.Sprintf("User '%s' key found in the database", requestedUsername))
 
 	return c.JSON(http.StatusOK, keyToBeReturned)
 }
