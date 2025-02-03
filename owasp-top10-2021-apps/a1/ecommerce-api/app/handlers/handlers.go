@@ -13,13 +13,25 @@ func HealthCheck(c echo.Context) error {
 	return c.String(http.StatusOK, "WORKING\n")
 }
 
-// GetTicket returns the userID ticket.
+// GetTicket returns the authenticated user's ticket.
 func GetTicket(c echo.Context) error {
-	id := c.Param("id")
-	userDataQuery := map[string]interface{}{"userID": id}
+	// Get authenticated user's ID from the session/token
+	authenticatedUserID := c.Get("user")
+	if authenticatedUserID == nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"result": "error", "details": "Authentication required"})
+	}
+
+	// Get requested user ID from path parameter
+	requestedID := c.Param("id")
+	
+	// Verify user is accessing their own ticket
+	if authenticatedUserID.(string) != requestedID {
+		return c.JSON(http.StatusForbidden, map[string]string{"result": "error", "details": "Access denied"})
+	}
+
+	userDataQuery := map[string]interface{}{"userID": requestedID}
 	userDataResult, err := db.GetUserData(userDataQuery)
 	if err != nil {
-		// could not find this user in MongoDB (or MongoDB err connection)
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error finding this UserID."})
 	}
 
