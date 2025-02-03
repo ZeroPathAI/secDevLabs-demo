@@ -4,6 +4,15 @@ const path = require('path');
 const mongoose = require('mongoose');
 const db = require('./db');
 
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 const server = express();
 
 const PORT = 10001;
@@ -67,7 +76,7 @@ server.post("/register", async (request, response) => {
 
             if(!user) { response.send('User Already Exists'); }
 
-            response.send("<h1>Welcome to Mongection System</h1><h3>" + user.email + "</h3>");
+            response.send("<h1>Welcome to Mongection System</h1><h3>" + escapeHtml(user.email) + "</h3>");
         }
         
     }
