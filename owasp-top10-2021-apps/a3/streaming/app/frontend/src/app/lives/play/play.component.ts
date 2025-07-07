@@ -104,7 +104,7 @@ export class PlayComponent implements OnInit {
 
     let usernameUserMessage = document.createElement("b");
     usernameUserMessage.className = "user-message";
-    usernameUserMessage.innerHTML = message.user.username;
+    usernameUserMessage.textContent = message.user.username;
 
     labelUserMessage.appendChild(usernameUserMessage);
 
