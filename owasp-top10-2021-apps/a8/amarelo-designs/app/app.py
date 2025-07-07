@@ -2,6 +2,7 @@
 
 from flask import Flask, request, make_response, render_template, redirect, flash
 import uuid
+import json
 import pickle
 import base64
 app = Flask(__name__)
@@ -20,7 +21,7 @@ def login():
         if username == "admin" and password == "admin":
             token = str(uuid.uuid4().hex)
             cookie = { "username":username, "admin":True, "sessionId":token }
-            pickle_resultado = pickle.dumps(cookie)
+            pickle_resultado = json.dumps(cookie).encode('utf-8')
             encodedSessionCookie = base64.b64encode(pickle_resultado)
             resp = make_response(redirect("/user"))
             resp.set_cookie("sessionId", encodedSessionCookie)
@@ -37,7 +38,7 @@ def userInfo():
     cookie = request.cookies.get("sessionId")
     if cookie == None:
         return "Não Autorizado!"
-    cookie = pickle.loads(base64.b64decode(cookie))
+    cookie = json.loads(base64.b64decode(cookie).decode('utf-8'))
 
     return render_template('user.html')
     
